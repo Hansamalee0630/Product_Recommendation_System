@@ -59,8 +59,8 @@ _*checkout.html_2*_
 
 ---
 
+## Directory overview 📂
 ```
-## Directory overview
 
 Arcade_Techsy_Product_Recommendation_System/
 │

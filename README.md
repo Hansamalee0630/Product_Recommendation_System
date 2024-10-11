@@ -59,6 +59,44 @@ _*checkout.html_2*_
 
 ---
 
+```
+## Directory overview
+
+Arcade_Techsy_Product_Recommendation_System/
+│
+├── product/                                 # Product file
+│   ├── model/                               # Model for data handling
+│   │   └── recommendations.py               # Recommendations code
+│   ├── data/                                # Data files
+│   │   ├── trending_products.csv            # Trending data file
+│   │   ├── clean_data.csv                   # Cleaned data file
+│   │   └── marketing_sample_5k_data.tsv     # Sample data file
+│   ├── static/                              # Static files
+│   │   ├── styles.css                       # Stylesheet for the application
+│   │   ├── img/                             # Images used in the application
+│   │   │   ├── img_1.png 
+│   │   │   ├── img_2.png 
+│   │   │   ├── img_3.png 
+│   │   │   ├── img_4.png 
+│   │   │   ├── img_5.png 
+│   │   │   ├── img_6.png 
+│   │   │   ├── img_7.png 
+│   │   │   └── img_8.png 
+│   └── templates/                           # Template files
+│   │   ├── index.html                       # Home page
+│   │   ├── main.html                        # Recommendation page
+│   │   ├── checkout.html                    # Checkout page
+│   │   ├── cart.html                        # Cart page
+│   ├── app.py                               # Flask app
+│   ├── products/                            # Database file
+│   ├── create_db.py                         # Database creation script
+│   └── README.md                            # Project documentation
+├── products/                                # Database file
+└── requirements.txt                         # Project dependencies
+
+                   
+```
+
 ## Installation & Setup
 
 To run the project locally:
@@ -78,7 +116,12 @@ To run the project locally:
    pip install -r requirements.txt
    ```
 
-4. **Run the application**:
+4. **Run the Data base application**:
+   ```bash
+   python create_db.py
+   ```
+   
+5. **Run the application**:
    ```bash
    python app.py
    ```

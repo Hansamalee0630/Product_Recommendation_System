@@ -1,4 +1,4 @@
-# Arcade Techsy
+# Arcade Techsy 😎
 
 ### An Innovative Product Recommendation System 🎮
 

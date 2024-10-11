@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecommerce Recommendation System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light p-3 sticky-top"> 
+  <a class="navbar-brand custom-padding-left kanit-light" href="#"><span class="logo">Arcade TECHSY </span>Platform</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav ml-auto custom-padding-right">
+      <li class="nav-item active">
+        <a class="nav-link" href="#"><i class="fas fa-home"></i> Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" id="settingsLink"><i class="fas fa-cog"></i> Settings</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Jumbotron -->
+<div class="jumbotron jumbotron-fluid jumbotron-custom text-center">
+  <div class="container">
+      <h1 class="display-4">Welcome To Arcade TECHSY</h1>
+      <p class="lead">Discover What's Waiting For You</p>
+      <a href="main" class="btn btn-light btn-lg rounded-pill">Explore More</a>
+  </div>
+</div>
+
+<!-- Trending Recommendations -->
+<div class="container mt-5">
+  <h2 class="text-center mb-4 pb-3 trend">Trending Products</h2>
+  <div class="row mt-4" id="trendingProductContainer">
+    {% for index, product in trending_products.iterrows() %}
+    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+      <div class="card h-90 card-hover">
+        <img src="{{ random_product_image_urls[index] }}" class="card-img-top" alt="{{ product['Name'] }}" style="height: 150px; object-fit: contain; padding: 10px;">
+        <div class="card-body d-flex flex-column justify-content-between">
+          <div>
+            <h5 class="card-title" style="color: rgb(7, 42, 67); text-transform: uppercase;">{{ truncate(product['Name'],12) }}</h5>
+            <p class="card-text" style="color: rgb(7, 42, 67);">Brand: <span style="text-transform: uppercase;">{{ product['Brand'] }}</span></p>
+            <p class="card-text">
+              <small class="text-muted">
+                {{ product['Rating'] }} <i class="fas fa-star text-warning"></i> ({{ product['ReviewCount'] }} reviews)
+              </small>
+            </p>
+            <h6 class="card-subtitle mb-2 text-primary">${{ random_price }}</h6>
+          </div>
+          <div class="d-flex justify-content-center mt-3">
+            <button type="button" class="btn btn-light rounded-pill" data-toggle="modal" data-target="#productModal{{ index }}">View Info</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="productModal{{ index }}" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered custom-modal-size" role="document">
+        <div class="modal-content modal-glass">
+          <div class="modal-header gradient-header justify-content-center">
+            <h5 class="modal-title kanit-thin text-center" id="productModalLabel">{{ product['Name'] }}</h5>
+            <button type="button" class="close close-icon position-absolute" data-dismiss="modal" aria-label="Close" style="right: 15px;">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-4">
+                <img src="{{ random_product_image_urls[index] }}" class="img-fluid rounded shadow" alt="{{ product['Name'] }}">
+              </div>
+              <div class="col-md-8 text-left">
+                <p><strong>Brand:</strong><span style="text-transform: uppercase;"> {{ product['Brand'] }}</span></p>
+                <p><strong>Review Count:</strong> <span class="badge badge-info">{{ product['ReviewCount'] }}</span></p>
+                <p><strong>Rating:</strong> <span class="badge badge-warning">{{ product['Rating'] }} ★</span></p>
+                <p><strong>Price:</strong> <span class="text-success price-animated">$ {{ random_price }}</span></p>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer gradient-footer">
+            <button type="button" class="btn btn-light rounded-pill" onclick="addToCart('{{ product.Name}}', '{{ random_product_image_urls[index] }}', '{{ product.Brand}}', '{{ product.Rating}}', '{{ product.ReviewCount }}', '{{ random_price }}')">Add to Cart</button>
+            <button type="button" class="btn btn-light rounded-pill custom-close-btn" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Cart Section -->
+<div class="container cart-section" id="cart-section" style="display: none;">
+  <h2 class="text-center mb-4 pb-3 trend">Your Cart</h2>
+  <div class="row mt-4" id="cart-items"></div>
+  
+  <div class="text-center mt-4">
+      <button id="checkoutButton" class="btn btn-secondary btn-lg rounded-pill">Proceed to Checkout</button>
+  </div>
+  <div class="pb-5"></div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+  const cart = []; // Array to store added products
+
+  // Function to update the cart display
+  function updateCartDisplay() {
+      const cartItemsContainer = document.getElementById('cart-items');
+      cartItemsContainer.innerHTML = ''; // Clear existing items
+
+      // Display each product in a card format
+      cart.forEach(product => {
+          const colDiv = document.createElement('div');
+          colDiv.classList.add('col-lg-3', 'col-md-4', 'col-sm-6', 'mb-4');
+
+          colDiv.innerHTML = `
+            <div class="card h-100 card-hover">
+              <img src="${product.image}" class="card-img-top" alt="${product.name}" style="height: 150px; object-fit: contain; padding: 10px;">
+              <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                  <h5 class="card-title text-uppercase">${product.name}</h5>
+                  <p class="card-text text-muted">Brand: <span class="text-uppercase">${product.brand}</span></p>
+                  <p class="card-text">
+                    <small class="text-muted">
+                      ${product.rating} <i class="fas fa-star text-warning"></i> (${product.reviewCount} reviews)
+                    </small>
+                  </p>
+                  <h6 class="card-subtitle mb-2">$${product.price}</h6>
+                </div>
+                <div class="d-flex justify-content-center mt-3">
+                  <button type="button" class="btn btn-light rounded-pill" onclick="removeFromCart('${product.name}')">Remove</button>
+                </div>
+              </div>
+            </div>
+          `;
+
+          cartItemsContainer.appendChild(colDiv);
+      });
+
+      // Store cart items in local storage
+      localStorage.setItem('cart', JSON.stringify(cart));
+  }
+
+  // Function to add an item to the cart
+  function addToCart(productName, productImage, productBrand, productRating, productReviewCount, productPrice) {
+      // Create a product object
+      const product = { 
+          name: productName, 
+          image: productImage, 
+          brand: productBrand, 
+          rating: productRating, 
+          reviewCount: productReviewCount, 
+          price: productPrice 
+      };
+      
+      // Add product to the cart
+      cart.push(product);
+      updateCartDisplay();
+
+      // Show cart section
+      document.getElementById('cart-section').style.display = 'block';
+
+      // Notify user
+      alert(`${productName} added to cart!`);
+  }
+
+  // Function to remove an item from the cart
+  function removeFromCart(productName) {
+      // Find the index of the product in the cart
+      const productIndex = cart.findIndex(product => product.name === productName);
+      
+      // Remove the product from the cart if it exists
+      if (productIndex !== -1) {
+          cart.splice(productIndex, 1);
+          updateCartDisplay();
+
+          // Notify user
+          alert(`${productName} removed from cart!`);
+      }
+  }
+
+  // Function to navigate to the checkout page
+  document.getElementById('checkoutButton').onclick = function() {
+      const cartItemsJSON = JSON.stringify(cart); // Convert cart items to JSON
+      localStorage.setItem('cart', cartItemsJSON); // Store cart items in localStorage
+      window.location.href = '/checkout'; // Redirect to the checkout page
+  };
+
+  // Load cart items from localStorage on page load
+  window.onload = function() {
+      localStorage.clear(); // Clear the cart on page load
+      const storedCart = localStorage.getItem('cart');
+      if (storedCart) {
+          cart.push(...JSON.parse(storedCart));
+          updateCartDisplay();
+          if (cart.length > 0) {
+              document.getElementById('cart-section').style.display = 'block'; // Show cart section if items exist
+          }
+      }
+  };
+</script>
+
+<!-- Settings Modal -->
+<div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Settings content here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--footer-->
+<footer class="footer bg-dark text-white">
+  <div class="container" style="padding-top:40px;">
+      <div class="row">
+          <div class="col-md-3 col-sm-6">
+              <h5>About Us</h5>
+              <p class="raleway-medium">Our mission is to revolutionize online shopping by providing a seamless, enjoyable, and personalized experience for every customer. </p>
+          </div>
+          <div class="col-md-3 col-sm-6">
+              <h5>Quick Links</h5>
+              <ul class="list-unstyled">
+                  <li><a href="#" class="custom-text-color">Home</a></li>
+                  <li><a href="#" class="custom-text-color">About</a></li>
+                  <li><a href="#" class="custom-text-color">Services</a></li>
+                  <li><a href="#" class="custom-text-color">Contact</a></li>
+              </ul>
+          </div>
+          <div class="col-md-3 col-sm-6">
+              <h5>Support</h5>
+              <ul class="list-unstyled">
+                  <li><a href="#" class="custom-text-color">FAQ</a></li>
+                  <li><a href="#" class="custom-text-color">Terms of Service</a></li>
+                  <li><a href="#" class="custom-text-color">Privacy Policy</a></li>
+              </ul>
+          </div>
+          <div class="col-md-3 col-sm-6">
+              <h5>Contact Us</h5>
+              <address>
+                  <strong>Arcade Techsy</strong><br>
+                  A34/D Street, Panadura<br>
+                  Srilanka<br>
+                  <i class="fas fa-phone"></i> Phone: +9479801256<br>
+                  <i class="fas fa-envelope"></i> Email: ecom@gmail.com
+              </address>
+          </div>
+      </div>
+      <div class="row mt-3">
+          <div class="col-md-12">
+              <hr class="bg-light">
+              <p class="text-center raleway-medium">© 2024 ECOM PLATFORM. All Rights Reserved.</p>
+          </div>
+      </div>
+  </div>
+</footer>
+
+
+</body>
+</html> 

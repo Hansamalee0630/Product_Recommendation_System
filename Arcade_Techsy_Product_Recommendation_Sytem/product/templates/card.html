@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Link to Bootstrap CSS for styling the page -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Link to Font Awesome for icons -->
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light p-3 sticky-top">
+  <a class="navbar-brand" href="/index">Arcade TECHSY Platform</a>
+  <!-- Brand name and link to the home page -->
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+    <!-- Button for toggling the navbar on smaller screens -->
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="/index">Home</a>
+        <!-- Link to the home page -->
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="/cart">Cart</a>
+        <!-- Link to the cart page, marked as active -->
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Cart Section -->
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Your Cart</h2>
+    <!-- Header for the cart section -->
+    <div class="row" id="cart-items"></div>
+    <!-- Container to hold the cart items -->
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<!-- Linking jQuery and Bootstrap JS for functionality -->
+
+<script>
+    const cart = []; // This will hold the cart items
+
+    // Fetch the cart items from the server
+    function fetchCartItems() {
+        fetch('/get_cart_items') // Adjust the URL as necessary
+            .then(response => response.json())
+            .then(data => {
+                cart.push(...data); // Populate the cart array with items received from the server
+                updateCartDisplay(); // Update the cart display with the fetched items
+            })
+            .catch(error => {
+                console.error('Error fetching cart items:', error);
+                // Log any errors that occur during the fetch operation
+            });
+    }
+
+    // Function to update the cart display
+    function updateCartDisplay() {
+        const cartItemsContainer = document.getElementById('cart-items');
+        cartItemsContainer.innerHTML = ''; // Clear existing items in the cart display
+
+        // Display each product in a card format
+        cart.forEach(product => {
+            const colDiv = document.createElement('div');
+            colDiv.classList.add('col-lg-3', 'col-md-4', 'col-sm-6', 'mb-4');
+            // Create a column div for responsive layout
+
+            colDiv.innerHTML = `
+                <div class="card h-100">
+                    <img src="${product.image}" class="card-img-top" alt="${product.name}" style="height: 150px; object-fit: contain; padding: 10px;">
+                    <!-- Image of the product with styling -->
+                    <div class="card-body">
+                        <h5 class="card-title">${product.name}</h5>
+                        <!-- Title of the product -->
+                    </div>
+                </div>
+            `;
+
+            cartItemsContainer.appendChild(colDiv);
+            // Append the column div to the cart items container
+        });
+    }
+
+    // Call the function to fetch cart items when the page loads
+    document.addEventListener('DOMContentLoaded', fetchCartItems);
+    // Ensures that the cart items are fetched after the DOM is fully loaded
+</script>
+
+</body>
+</html>
